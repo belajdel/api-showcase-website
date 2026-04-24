@@ -24,7 +24,6 @@ interface ApiResponse {
 }
 
 export function ApiShowcase() {
-  const [baseUrl, setBaseUrl] = useState("http://localhost:3000")
   const [alertThreshold, setAlertThreshold] = useState("5")
   
   // API States
@@ -39,7 +38,7 @@ export function ApiShowcase() {
   const fetchProducts = async () => {
     setProductsResponse({ status: "loading", data: null })
     try {
-      const res = await fetch(`${baseUrl}/produits`)
+      const res = await fetch(`/api/produits`)
       const data = await res.json()
       setProductsResponse({ status: "success", data, statusCode: res.status })
     } catch (error) {
@@ -50,7 +49,7 @@ export function ApiShowcase() {
   const addProduct = async () => {
     setAddProductResponse({ status: "loading", data: null })
     try {
-      const res = await fetch(`${baseUrl}/produits`, {
+      const res = await fetch(`/api/produits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProduct),
@@ -68,7 +67,7 @@ export function ApiShowcase() {
   const fetchValue = async () => {
     setValueResponse({ status: "loading", data: null })
     try {
-      const res = await fetch(`${baseUrl}/valeur`)
+      const res = await fetch(`/api/valeur`)
       const data = await res.json()
       setValueResponse({ status: "success", data, statusCode: res.status })
     } catch (error) {
@@ -79,7 +78,7 @@ export function ApiShowcase() {
   const fetchAlerts = async () => {
     setAlertResponse({ status: "loading", data: null })
     try {
-      const res = await fetch(`${baseUrl}/produits/alerte/${alertThreshold}`)
+      const res = await fetch(`/api/produits/alerte/${alertThreshold}`)
       const data = await res.json()
       setAlertResponse({ status: "success", data, statusCode: res.status })
     } catch (error) {
@@ -97,30 +96,8 @@ export function ApiShowcase() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">API Products Showcase</h1>
-        <p className="text-muted-foreground text-lg">Interactive demonstration of your REST API endpoints</p>
+        <h1 className="text-4xl font-bold tracking-tight mb-2">API  Showcase</h1>
       </div>
-
-      {/* API Base URL Configuration */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">API Configuration</CardTitle>
-          <CardDescription>Set your API base URL to test the endpoints</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="http://localhost:3000"
-              className="max-w-md"
-            />
-            <Badge variant="outline" className="h-9 px-3 flex items-center">
-              Base URL
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
 
       <Tabs defaultValue="list" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
@@ -165,10 +142,47 @@ export function ApiShowcase() {
               
               {productsResponse.data && (
                 <div className="rounded-lg border bg-muted/50 p-4">
-                  <p className="text-sm font-medium mb-2 text-muted-foreground">Response:</p>
-                  <pre className="text-sm overflow-auto max-h-64 bg-background p-3 rounded-md">
-                    {JSON.stringify(productsResponse.data, null, 2)}
-                  </pre>
+                  <p className="text-sm font-medium mb-4 text-muted-foreground">Response:</p>
+                  {Array.isArray(productsResponse.data) && productsResponse.data.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">ID</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Product Name</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Price</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Quantity</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Total Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {productsResponse.data.map((product: Product, index: number) => (
+                            <tr key={product.id || index} className="border-b hover:bg-background/50 transition-colors">
+                              <td className="py-3 px-4">{product.id || index + 1}</td>
+                              <td className="py-3 px-4 font-medium">{product.nom}</td>
+                              <td className="py-3 px-4 text-right">${product.prix.toFixed(2)}</td>
+                              <td className="py-3 px-4 text-right">
+                                <Badge variant="outline">{product.quantite} units</Badge>
+                              </td>
+                              <td className="py-3 px-4 text-right font-semibold text-emerald-600">
+                                ${(product.prix * product.quantite).toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Total Products: {productsResponse.data.length}</span>
+                        <span className="text-lg font-bold">
+                          Total Value: ${productsResponse.data.reduce((sum: number, p: Product) => sum + (p.prix * p.quantite), 0).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <pre className="text-sm overflow-auto max-h-64 bg-background p-3 rounded-md">
+                      {JSON.stringify(productsResponse.data, null, 2)}
+                    </pre>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -204,7 +218,7 @@ export function ApiShowcase() {
                   <Field>
                     <FieldLabel>Price (prix)</FieldLabel>
                     <Input
-                      type="number"
+                      type="text  "
                       value={newProduct.prix}
                       onChange={(e) => setNewProduct({ ...newProduct, prix: Number(e.target.value) })}
                       placeholder="0.00"
