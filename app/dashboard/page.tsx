@@ -30,8 +30,20 @@ export default function DashboardPage() {
   const [lowStockCount, setLowStockCount] = useState(0)
   const [lowStockProducts, setLowStockProducts] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
+  const [threshold, setThreshold] = useState(5)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const fetchAlertProducts = async (thresholdValue: number) => {
+    try {
+      const lowStock = await getLowStockProducts(thresholdValue)
+      const products = Array.isArray(lowStock) ? lowStock : []
+      setLowStockProducts(products)
+      setLowStockCount(products.length)
+    } catch (err) {
+      console.error('[v0] Error fetching alert products:', err)
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,11 +54,8 @@ export default function DashboardPage() {
         const valueData = await getStockValue()
         setStockValue(typeof valueData === 'number' ? valueData : 0)
 
-        // Fetch low stock products (threshold of 5)
-        const lowStock = await getLowStockProducts(5)
-        const products = Array.isArray(lowStock) ? lowStock : []
-        setLowStockProducts(products)
-        setLowStockCount(products.length)
+        // Fetch low stock products with initial threshold
+        await fetchAlertProducts(threshold)
 
         // Fetch invoices
         const invoiceData = await getInvoices()
@@ -64,6 +73,12 @@ export default function DashboardPage() {
 
     fetchData()
   }, [])
+
+  const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 0
+    setThreshold(Math.max(0, value))
+    fetchAlertProducts(Math.max(0, value))
+  }
 
   if (loading) {
     return (
@@ -167,8 +182,22 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="text-lg">Low Stock Products</CardTitle>
             <CardDescription>
-              Products with quantity below 5 units
+              Set a threshold to see products below that quantity
             </CardDescription>
+            <div className="mt-4 flex items-center gap-2">
+              <label htmlFor="threshold" className="text-sm font-medium text-muted-foreground">
+                Threshold:
+              </label>
+              <input
+                id="threshold"
+                type="number"
+                min="0"
+                value={threshold}
+                onChange={handleThresholdChange}
+                className="w-20 px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <span className="text-sm text-muted-foreground">units</span>
+            </div>
           </CardHeader>
           <CardContent>
             {lowStockProducts.length > 0 ? (
