@@ -1,9 +1,5 @@
-import { ApiShowcase } from "@/components/api-showcase"
+import { redirect } from 'next/navigation'
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-background">
-      <ApiShowcase />
-    </main>
-  )
+  redirect('/dashboard')
 }

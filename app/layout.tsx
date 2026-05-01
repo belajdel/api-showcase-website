@@ -2,13 +2,14 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import { Navigation } from '@/components/navigation'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'API Products Showcase',
-  description: 'Interactive demonstration of your REST API endpoints for product management',
+  title: 'Inventory & Invoicing Dashboard',
+  description: 'Complete inventory management and invoice creation system',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -37,7 +38,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased">
-        {children}
+        <div className="flex">
+          <Navigation />
+          <main className="ml-64 flex-1 p-8">
+            {children}
+          </main>
+        </div>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
